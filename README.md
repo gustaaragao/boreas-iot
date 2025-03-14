@@ -1,1 +1,1 @@
-# Projeto de Embarcados - Bóreas (Medidor de Temperatura e Umidade)
+# Bóreas (Medidor de Temperatura e Umidade)
