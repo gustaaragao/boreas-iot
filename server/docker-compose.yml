@@ -11,6 +11,8 @@ services:
       - /var/rootdirs/home/fio/mqtt/config:/mosquitto/config:rw
       - /var/rootdirs/home/fio/mqtt/data:/mosquitto/data
       - /var/rootdirs/home/fio/mqtt/log:/mosquitto/log
+    networks:
+      - minha-rede
 
   node-red:
     container_name: node-red
@@ -22,9 +24,41 @@ services:
       - node_red_data:/data
     depends_on:
       - mqtt
+    networks:
+      - minha-rede
+
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.2.0
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - minha-rede
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - minha-rede
+    depends_on:
+      - influxdb
 
 volumes:
   config:
   data:
   log:
   node_red_data:
+  influxdb_data:
+  grafana_data:
+
+networks:
+  minha-rede:
+    driver: bridge
