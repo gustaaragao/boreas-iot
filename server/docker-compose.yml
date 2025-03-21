@@ -1,0 +1,30 @@
+services:
+  mqtt:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: always
+    user: "0:0"
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - /var/rootdirs/home/fio/mqtt/config:/mosquitto/config:rw
+      - /var/rootdirs/home/fio/mqtt/data:/mosquitto/data
+      - /var/rootdirs/home/fio/mqtt/log:/mosquitto/log
+
+  node-red:
+    container_name: node-red
+    image: nodered/node-red
+    restart: always
+    ports:
+      - "1880:1880"
+    volumes:
+      - node_red_data:/data
+    depends_on:
+      - mqtt
+
+volumes:
+  config:
+  data:
+  log:
+  node_red_data:
