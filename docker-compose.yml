@@ -34,7 +34,7 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./server/configs/influxdb:/var/lib/influxdb2
+      - /var/lib/influxdb2:/var/lib/influxdb2 # Esse é o único volume que não ficará no diretório do projeto
     networks:
       - minha-rede
 
