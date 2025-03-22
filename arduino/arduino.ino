@@ -3,30 +3,39 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-#define DHTPIN 3
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
+/* CONSTANTES DE CONFIGURACAO DO DHT22 */
+#define DHTPIN 3          // Pino para receber os dados do DHT22
+#define DHTTYPE DHT22     // Definindo o tipo do DHT (11 ou 12) 
 
-#define TEMPO_DELAY 10000
+#define TEMPO_DELAY 10000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
 
-// Configuração de Rede
+DHT dht(DHTPIN, DHTTYPE); // Criando objeto DHT
+
+/* CONSTANTES DE CONFIGURACAO DO MQTT */
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192, 168, 137, 19);    // IP do Arduino
-IPAddress server(192, 168, 137, 1); // IP do PC com Docker
+IPAddress server(192, 168, 137, 1);   // IP do MQTT Broker (no nosso caso, o IP da máquina com o MQTT Broker)
+IPAddress ip(192, 168, 137, 19);      // IP do Arduino (Lembre-se que ambos precisam está na mesma rede)
+
+#define PORTA_MQTT_BROKER 1883        // Por padrão, o Mosquitto (MQTT Broker) fica hospedado na porta 1883
 
 EthernetClient ethClient;
+
 PubSubClient client(ethClient);
 
+/* FUNCAO DE INICIALIZACAO DO PROJETO */
 void setup() {
-  Serial.begin(9600);
-  dht.begin();
+  Serial.begin(9600);                             // Inicializa a comunicacao Serial
   
-  Ethernet.begin(mac, ip);
-  delay(1500); // Estabilização
+  dht.begin();                                    // Inicializa o DHT22
   
-  client.setServer(server, 1883);
+  Ethernet.begin(mac, ip);                        // Inicializa a comunicação Ethernet usando o endereço MAC fornecido e configura um IP fixo para o Arduino
+
+  delay(1500);                                    // Delay de 1.5 segundos (BOA PRÁTICA)
+  
+  client.setServer(server, PORTA_MQTT_BROKER);    // Configura e Inicializa um cliente MQTT
 }
 
+/* FUNCAO RESPONSAVEL PELA CONEXAO COM O MQTT BROKER */
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Conectando ao MQTT...");
@@ -41,15 +50,19 @@ void reconnect() {
   }
 }
 
+/* FUNCAO DE LOOP DO PROJETO */
 void loop() {
   if (!client.connected()) {
+    // Tenta a conexao com MQTT Broker caso nao haja
     reconnect();
   }
-  client.loop();
 
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  client.loop(); // Essa funcao mantem a conexao com o MQTT Broker sempre ativa
 
+  float h = dht.readHumidity();       // Medindo a UMIDADE pelo DHT22
+  float t = dht.readTemperature();    // Medindo a TEMPERATURA pelo DHT22
+
+  // Debbugando no Serial os valores aferidos
   Serial.print("Valores aferidos pelo DHT22: \t");
   Serial.print("Umidade: ");
   Serial.print(h);
@@ -58,11 +71,13 @@ void loop() {
   Serial.println("°C");
 
   if (isnan(h) || isnan(t)) {
+    // Caso nada tenha sido capturado, retorna uma mensagem no Serial e para a execução
     Serial.println("Falha na leitura do sensor!");
     return;
   }
 
-  // Criação do JSON com ArduinoJson
+  // Criação do JSON com ArduinoJson --> O MQTT Broker está configurado para receber um JSON
+  // o JSON tem o seguinte formado: {"t": float, "h": float}
   StaticJsonDocument<128> jsonDocument;
   jsonDocument["t"] = t;
   jsonDocument["h"] = h;
@@ -70,9 +85,11 @@ void loop() {
   char msg[128];
   serializeJson(jsonDocument, msg);
 
-  client.publish("home/temperature-humidity", msg);
-  Serial.print("Publicado: ");
+  client.publish("home/temperature-humidity", msg); // Enviando o JSON para o tópico "home/temperature-humidity"
+  
+  // Debbugando no Serial o JSON enviado
+  Serial.print("JSON enviado para o MQTTBroker: ");
   Serial.println(msg);
   
-  delay(TEMPO_DELAY);
+  delay(TEMPO_DELAY); // Tempo de Delay para a proxima medicao
 }
