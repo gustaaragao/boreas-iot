@@ -42,6 +42,7 @@ server/configs/influxdb/wal/
 
 # Logs do Mosquitto
 server/configs/mosquitto/log/
+server/configs/mosquitto/data/mosquitto.db
 
 # Outros arquivos temporários
 *.tmp
