@@ -26,6 +26,8 @@ PubSubClient client(ethClient);
 void setup() {
   Serial.begin(9600);                             // Inicializa a comunicacao Serial
   
+  Serial.println("Serial Conectado");             // Debuggando Serial
+
   dht.begin();                                    // Inicializa o DHT22
   
   Ethernet.begin(mac, ip);                        // Inicializa a comunicação Ethernet usando o endereço MAC fornecido e configura um IP fixo para o Arduino

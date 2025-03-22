@@ -1,0 +1,64 @@
+services:
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: always
+    user: "0:0"
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./server/configs/mosquitto/config:/mosquitto/config:rw
+      - ./server/configs/mosquitto/data:/mosquitto/data
+      - ./server/configs/mosquitto/log:/mosquitto/log
+    networks:
+      - minha-rede
+
+  node-red:
+    container_name: node-red
+    image: nodered/node-red
+    restart: always
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./server/configs/node-red:/data
+    depends_on:
+      - mosquitto
+    networks:
+      - minha-rede
+
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.2.0
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./server/configs/influxdb:/var/lib/influxdb2
+    networks:
+      - minha-rede
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server/configs/grafana:/var/lib/grafana
+    networks:
+      - minha-rede
+    depends_on:
+      - influxdb
+
+volumes:
+  config:
+  data:
+  log:
+  node_red_data:
+  influxdb_data:
+  grafana_data:
+
+networks:
+  minha-rede:
+    driver: bridge

@@ -1,0 +1,54 @@
+# Logs
+*.log
+
+# Diretórios de cache
+__pycache__/
+.cache/
+
+# Arquivos temporários do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Configurações locais do IDE
+.vscode/
+.idea/
+
+# Dependências do Node.js
+node_modules/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos gerados pelo Arduino IDE
+*.elf
+*.hex
+*.bin
+*.eep
+
+# Bibliotecas Arduino descompactadas
+arduino/libs/
+
+# Dados e backups do Grafana
+server/configs/grafana/csv/
+server/configs/grafana/pdf/
+server/configs/grafana/png/
+server/configs/grafana/plugins/
+server/configs/grafana/grafana.db
+
+# Dados do InfluxDB
+server/configs/influxdb/data/
+server/configs/influxdb/wal/
+
+# Logs do Mosquitto
+server/configs/mosquitto/log/
+
+# Outros arquivos temporários
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Arquivos de build do Docker
+docker-compose.override.yml
+.env
