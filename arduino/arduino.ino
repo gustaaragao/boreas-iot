@@ -7,7 +7,7 @@
 #define DHTPIN 3          // Pino para receber os dados do DHT22
 #define DHTTYPE DHT22     // Definindo o tipo do DHT (11 ou 12) 
 
-#define TEMPO_DELAY 10000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
+#define TEMPO_DELAY 100000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
 
 DHT dht(DHTPIN, DHTTYPE); // Criando objeto DHT
 

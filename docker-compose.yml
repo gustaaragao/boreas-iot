@@ -46,6 +46,8 @@ services:
       - "3000:3000"
     volumes:
       - ./server/configs/grafana:/var/lib/grafana
+      - ./server/configs/grafana/provisioning:/etc/grafana/provisioning
+      - ./server/configs/grafana/dashboards:/etc/grafana/provisioning/dashboards
     networks:
       - minha-rede
     depends_on:
