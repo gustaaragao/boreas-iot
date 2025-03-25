@@ -1,15 +1,18 @@
-#include <DHT.h>
-#include <Ethernet.h>
-#include <PubSubClient.h>
-#include <ArduinoJson.h>
+#include <DHT.h>                    // Biblioteca para lidar com o DHT22 (ou 11)
+#include <Ethernet.h>               // Biblioteca para lidar com a conexao Ethernet
+#include <PubSubClient.h>           // Biblioteca para Publisher e Subscriber --> Protocolo MQTT
+#include <ArduinoJson.h>            // Biblioteca para lidar com JSON
+#include <Wire.h>                   // Biblioteca para lidar com a comunicacao com I2C
+#include <LiquidCrystal_I2C.h>      // Biblioteca para lidar com o display 16x2
 
 /* CONSTANTES DE CONFIGURACAO DO DHT22 */
 #define DHTPIN 3          // Pino para receber os dados do DHT22
 #define DHTTYPE DHT22     // Definindo o tipo do DHT (11 ou 12) 
 
-#define TEMPO_DELAY 100000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
+#define TEMPO_DELAY 2000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
 
 DHT dht(DHTPIN, DHTTYPE); // Criando objeto DHT
+
 
 /* CONSTANTES DE CONFIGURACAO DO MQTT */
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -22,11 +25,30 @@ EthernetClient ethClient;
 
 PubSubClient client(ethClient);
 
+
+/* CONSTANTES DE CONFIGURACAO DO I2C + DISPLAY LCD 20x4 */
+#define NUMERO_COLUNAS 20
+#define NUMERO_LINHAS 4
+#define ENDERECO 0x27
+
+LiquidCrystal_I2C lcd(ENDERECO, NUMERO_COLUNAS, NUMERO_LINHAS); // Criando o objeto LiquidCrystal para ser usada com o I2C
+
+
 /* FUNCAO DE INICIALIZACAO DO PROJETO */
 void setup() {
-  Serial.begin(9600);                             // Inicializa a comunicacao Serial
+  lcd.init();                                     // Inicializa a comunicacao com o Display LCD
+  lcd.backlight();                                // Liga a luz do Display
   
+  // Exibe o nome da Marca "Boreas Frost"
+  lcd.setCursor(0,0);
+  lcd.print("Boreas Frost...");
+  
+  
+  Serial.begin(9600);                             // Inicializa a comunicacao Serial
   Serial.println("Serial Conectado");             // Debuggando Serial
+  
+  lcd.setCursor(0,1);
+  lcd.print("- Serial Conectado!");
 
   dht.begin();                                    // Inicializa o DHT22
   
@@ -42,7 +64,16 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Conectando ao MQTT...");
     if (client.connect("ArduinoDHT22")) {
+      // Exibir sucesso no Serial
       Serial.println("Conectado!");
+      // Exibir sucesso no Display LCD
+      lcd.setCursor(0,2);
+      lcd.print("- MQTT Conectado!");
+      // Exibir sucesso da Inicializacao da Aplicacao no LCD
+      lcd.setCursor(0, 3);
+      lcd.print("Inicializacao OK!");
+      delay(5000);
+      lcd.clear();
     } else {
       Serial.print("Falha, rc=");
       Serial.print(client.state());
@@ -59,6 +90,11 @@ void loop() {
     reconnect();
   }
 
+  lcd.clear();
+
+  lcd.setCursor(4, 0);
+  lcd.print("Boreas Frost");
+
   client.loop(); // Essa funcao mantem a conexao com o MQTT Broker sempre ativa
 
   float h = dht.readHumidity();       // Medindo a UMIDADE pelo DHT22
@@ -73,7 +109,7 @@ void loop() {
   Serial.println("°C");
 
   if (isnan(h) || isnan(t)) {
-    // Caso nada tenha sido capturado, retorna uma mensagem no Serial e para a execução
+    // Caso nada tenha sido capturado, retorna uma mensagem de erro no Serial e tenta novamente
     Serial.println("Falha na leitura do sensor!");
     return;
   }
@@ -87,7 +123,7 @@ void loop() {
   char msg[128];
   serializeJson(jsonDocument, msg);
 
-  client.publish("home/temperature-humidity", msg); // Enviando o JSON para o tópico "home/temperature-humidity"
+  // client.publish("home/temperature-humidity", msg); // Enviando o JSON para o tópico "home/temperature-humidity"
   
   // Debbugando no Serial o JSON enviado
   Serial.print("JSON enviado para o MQTTBroker: ");
