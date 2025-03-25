@@ -9,10 +9,9 @@
 #define DHTPIN 3          // Pino para receber os dados do DHT22
 #define DHTTYPE DHT22     // Definindo o tipo do DHT (11 ou 12) 
 
-#define TEMPO_DELAY 2000 // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
+#define TEMPO_DELAY 4000  // Tempo de delay para cada inferencia (>= 2s, que consiste no Tempo de Resposta do DHT22) 
 
 DHT dht(DHTPIN, DHTTYPE); // Criando objeto DHT
-
 
 /* CONSTANTES DE CONFIGURACAO DO MQTT */
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -22,9 +21,7 @@ IPAddress ip(192, 168, 137, 19);      // IP do Arduino (Lembre-se que ambos prec
 #define PORTA_MQTT_BROKER 1883        // Por padrão, o Mosquitto (MQTT Broker) fica hospedado na porta 1883
 
 EthernetClient ethClient;
-
 PubSubClient client(ethClient);
-
 
 /* CONSTANTES DE CONFIGURACAO DO I2C + DISPLAY LCD 20x4 */
 #define NUMERO_COLUNAS 20
@@ -32,6 +29,11 @@ PubSubClient client(ethClient);
 #define ENDERECO 0x27
 
 LiquidCrystal_I2C lcd(ENDERECO, NUMERO_COLUNAS, NUMERO_LINHAS); // Criando o objeto LiquidCrystal para ser usada com o I2C
+
+// Variáveis globais para armazenar os dados processados para exibição no LCD
+bool novosDados = false;              // Flag que indica se há novos dados
+float tempC, tempK, tempF, umidade;   // Valores que são aferidos pelo DHT processados
+char timestamp[20];                   // Tempo atual (vai levar em consideração o tempo do servidor, ou seja, do MQTT Broker)
 
 
 /* FUNCAO DE INICIALIZACAO DO PROJETO */
@@ -42,7 +44,6 @@ void setup() {
   // Exibe o nome da Marca "Boreas Frost"
   lcd.setCursor(0,0);
   lcd.print("Boreas Frost...");
-  
   
   Serial.begin(9600);                             // Inicializa a comunicacao Serial
   Serial.println("Serial Conectado");             // Debuggando Serial
@@ -57,6 +58,32 @@ void setup() {
   delay(1500);                                    // Delay de 1.5 segundos (BOA PRÁTICA)
   
   client.setServer(server, PORTA_MQTT_BROKER);    // Configura e Inicializa um cliente MQTT
+  client.setCallback(callback);                   // Configura a função de recebimento de mensagens
+}
+
+/* FUNCAO PARA PROCESSAR MENSAGENS RECEBIDAS (NÃO BLOQUEANTE) */
+void callback(char* topic, byte* payload, unsigned int length) {
+  // Debug: mostra mensagem recebida
+  Serial.print("Mensagem recebida: ");
+  Serial.write(payload, length);
+  Serial.println();
+
+  // Deserializar o JSON do Payload
+  StaticJsonDocument<384> doc;
+  deserializeJson(doc, payload, length);
+
+  // Atualiza as variáveis globais diretamente do JSON
+  tempC = doc["temperatureCelsius"] | 0.0;
+  tempK = doc["temperatureKelvin"] | 0.0;
+  tempF = doc["temperatureFahrenheit"] | 0.0;
+  umidade = doc["humidity"] | 0.0;
+  
+  // Faz uma cópia do timestamp recebido pelo JSON
+  const char* timestampRecebido = doc["timestamp"] | "00:00:00";
+  strncpy(timestamp, timestampRecebido, sizeof(timestamp) - 1);
+  timestamp[sizeof(timestamp) - 1] = '\0';
+
+  novosDados = true;  // Sinaliza para atualização do display LCD no loop principal
 }
 
 /* FUNCAO RESPONSAVEL PELA CONEXAO COM O MQTT BROKER */
@@ -64,16 +91,16 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Conectando ao MQTT...");
     if (client.connect("ArduinoDHT22")) {
-      // Exibir sucesso no Serial
       Serial.println("Conectado!");
-      // Exibir sucesso no Display LCD
       lcd.setCursor(0,2);
       lcd.print("- MQTT Conectado!");
-      // Exibir sucesso da Inicializacao da Aplicacao no LCD
       lcd.setCursor(0, 3);
       lcd.print("Inicializacao OK!");
-      delay(5000);
+      // Aguardar 2s para que o usuário consiga ler as mensagens no display
+      delay(2000);
       lcd.clear();
+      // Nosso cliente deve estar inscrito no topico "home/temperature-humidity-processed" para receber os dados e exibir no display LCD
+      client.subscribe("home/temperature-humidity-processed"); 
     } else {
       Serial.print("Falha, rc=");
       Serial.print(client.state());
@@ -83,51 +110,75 @@ void reconnect() {
   }
 }
 
-/* FUNCAO DE LOOP DO PROJETO */
-void loop() {
-  if (!client.connected()) {
-    // Tenta a conexao com MQTT Broker caso nao haja
-    reconnect();
-  }
-
+/* FUNCAO PARA ATUALIZAR O DISPLAY DE FORMA NÃO BLOQUEANTE */
+void atualizarDisplay() {
   lcd.clear();
-
+  
+  // Linha 0: Nome centralizado
   lcd.setCursor(4, 0);
   lcd.print("Boreas Frost");
 
-  client.loop(); // Essa funcao mantem a conexao com o MQTT Broker sempre ativa
+  // Linha 1: Exibe temperatura em Celsius e Fahrenheit
+  lcd.setCursor(0, 1);
+  lcd.print(tempC, 2);
+  lcd.print("*C | ");
+  lcd.print(tempF, 2);
+  lcd.print("*F");
 
-  float h = dht.readHumidity();       // Medindo a UMIDADE pelo DHT22
-  float t = dht.readTemperature();    // Medindo a TEMPERATURA pelo DHT22
+    // Linha 1: Exibe temperatura em Kelvin e a umidade do ambiente
+  lcd.setCursor(0, 2);
+  lcd.print(tempK, 2);
+  lcd.print("K | ");
+  lcd.print("H:");
+  lcd.print(umidade, 1);
+  lcd.print("%");
 
-  // Debbugando no Serial os valores aferidos
-  Serial.print("Valores aferidos pelo DHT22: \t");
-  Serial.print("Umidade: ");
-  Serial.print(h);
-  Serial.print("% / Temperatura: ");
-  Serial.print(t);
-  Serial.println("°C");
+  // Linha 3: Horário dos dados
+  lcd.setCursor(0, 3);
+  lcd.print(timestamp);
 
-  if (isnan(h) || isnan(t)) {
-    // Caso nada tenha sido capturado, retorna uma mensagem de erro no Serial e tenta novamente
-    Serial.println("Falha na leitura do sensor!");
-    return;
+  novosDados = false;
+}
+
+/* FUNCAO DE LOOP DO PROJETO */
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();  // Mantém a conexão ativa com o MQTT Broker
+
+  if (novosDados) {
+    // Caso haja novosDados, atualize o display
+    atualizarDisplay();
   }
 
-  // Criação do JSON com ArduinoJson --> O MQTT Broker está configurado para receber um JSON
-  // o JSON tem o seguinte formado: {"t": float, "h": float}
-  StaticJsonDocument<128> jsonDocument;
-  jsonDocument["t"] = t;
-  jsonDocument["h"] = h;
-  
-  char msg[128];
-  serializeJson(jsonDocument, msg);
+  static unsigned long ultimaLeitura = 0; // Essa variável é importante para verificar se devemos ou não aferir outro valor de acordo com o TEMPO_DELAY
+  if (millis() - ultimaLeitura >= TEMPO_DELAY) {
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
 
-  // client.publish("home/temperature-humidity", msg); // Enviando o JSON para o tópico "home/temperature-humidity"
-  
-  // Debbugando no Serial o JSON enviado
-  Serial.print("JSON enviado para o MQTTBroker: ");
-  Serial.println(msg);
-  
-  delay(TEMPO_DELAY); // Tempo de Delay para a proxima medicao
+    // Debug dos valores lidos
+    Serial.print("DHT22 - Umidade: ");
+    Serial.print(h);
+    Serial.print("% / Temp: ");
+    Serial.print(t);
+    Serial.println("C");
+
+    if (!isnan(h) && !isnan(t)) {
+      StaticJsonDocument<128> jsonDocument;
+      jsonDocument["t"] = t;
+      jsonDocument["h"] = h;
+      
+      char msg[128];
+      serializeJson(jsonDocument, msg);
+
+      client.publish("home/temperature-humidity", msg);
+      
+      // Debug do JSON enviado
+      Serial.print("Publicado: ");
+      Serial.println(msg);
+    }
+
+    ultimaLeitura = millis();
+  }
 }

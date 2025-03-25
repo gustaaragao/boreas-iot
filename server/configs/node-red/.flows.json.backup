@@ -170,7 +170,7 @@
         "type": "function",
         "z": "c7f8fe9cbe87466e",
         "name": "Tratar o JSON",
-        "func": "// Pegando os valores do payload\nlet temperatureCelsius = msg.payload.t; \n\n// Convertendo para Kelvin\nlet temperatureKelvin = temperatureCelsius + 273.15;\n\n// Convertendo para Fahrenheit\nlet temperatureFahrenheit = (temperatureCelsius * 9/5) + 32;\n\n// Criando um novo payload com as três temperaturas\nmsg.payload = {\n    temperatureCelsius: temperatureCelsius,\n    temperatureKelvin: temperatureKelvin,\n    temperatureFahrenheit: temperatureFahrenheit,\n    humidity: msg.payload.h\n};\n\nreturn msg;",
+        "func": "// Pegando os valores do payload\nlet temperatureCelsius = msg.payload.t; \n\n// Convertendo para Kelvin\nlet temperatureKelvin = temperatureCelsius + 273.15;\n\n// Convertendo para Fahrenheit\nlet temperatureFahrenheit = (temperatureCelsius * 9/5) + 32;\n\n// Criando um novo payload com as três temperaturas\nmsg.payload = {\n    temperatureCelsius: temperatureCelsius.toFixed(2),\n    temperatureKelvin: temperatureKelvin.toFixed(2),\n    temperatureFahrenheit: temperatureFahrenheit.toFixed(2),\n    humidity: msg.payload.h,\n    timestamp: new Date().toLocaleTimeString()\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -182,7 +182,8 @@
         "wires": [
             [
                 "02d9828f4d80ac37",
-                "50c8af3bd57dacd3"
+                "50c8af3bd57dacd3",
+                "c17d33b2096a14ec"
             ]
         ]
     },
@@ -192,14 +193,14 @@
         "z": "c7f8fe9cbe87466e",
         "name": "Debug",
         "active": true,
-        "tosidebar": false,
-        "console": true,
+        "tosidebar": true,
+        "console": false,
         "tostatus": false,
         "complete": "payload",
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 920,
+        "x": 890,
         "y": 220,
         "wires": []
     },
@@ -218,7 +219,25 @@
         "org": "ufs",
         "bucket": "home/temperature-humidity",
         "x": 920,
-        "y": 440,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "c17d33b2096a14ec",
+        "type": "mqtt out",
+        "z": "c7f8fe9cbe87466e",
+        "name": "Mosquitto Docker",
+        "topic": "home/temperature-humidity-processed",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c33563d9c58425d1",
+        "x": 930,
+        "y": 420,
         "wires": []
     }
 ]
