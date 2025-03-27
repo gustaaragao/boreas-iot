@@ -26,9 +26,6 @@ yarn-error.log*
 *.bin
 *.eep
 
-# Bibliotecas Arduino descompactadas
-arduino/libs/
-
 # Dados e backups do Grafana
 server/configs/grafana/csv/
 server/configs/grafana/pdf/
