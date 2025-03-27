@@ -125,7 +125,7 @@ void atualizarDisplay() {
   lcd.print(tempF, 2);
   lcd.print("*F");
 
-    // Linha 1: Exibe temperatura em Kelvin e a umidade do ambiente
+    // Linha 2: Exibe temperatura em Kelvin e a umidade do ambiente
   lcd.setCursor(0, 2);
   lcd.print(tempK, 2);
   lcd.print("K | ");
