@@ -3,7 +3,7 @@
 #include <PubSubClient.h>           // Biblioteca para Publisher e Subscriber --> Protocolo MQTT
 #include <ArduinoJson.h>            // Biblioteca para lidar com JSON
 #include <Wire.h>                   // Biblioteca para lidar com a comunicacao com I2C
-#include <LiquidCrystal_I2C.h>      // Biblioteca para lidar com o display 16x2
+#include <LiquidCrystal_I2C.h>      // Biblioteca para lidar com o display I2C
 
 /* CONSTANTES DE CONFIGURACAO DO DHT22 */
 #define DHTPIN 3          // Pino para receber os dados do DHT22
