@@ -149,7 +149,7 @@ docker-compose up --build -d
 
 5. Configure o **InfluxDB**: criar um usuário, uma organização chamada `ufs` e um bucket `home/temperature-humidity`.
 
-6. *(Opcional)* Configure o **NODE-RED**: talvez seja necessário instalar manualmente as dependências de comunicação com InfluxDB, chamado `node-red-contrib-influxdb`.
+6. *(Opcional)* Configure o **NODE-RED**: talvez seja necessário instalar manualmente a dependência de comunicação com InfluxDB, chamada `node-red-contrib-influxdb`.
 
 7. Configure o **NODE-RED**: substitua o **API Token do InfluxDB** presente no projeto pelo o seu. Recomendo esse [tutorial](https://docs.influxdata.com/influxdb/cloud/admin/tokens/create-token/) da Documentação Oficial.
 
