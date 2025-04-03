@@ -33,7 +33,7 @@ Todo o sistema é conteinerizado utilizando **Docker**, o que facilita a implant
   <p style="font-style: italic; margin-top: 10px; font-size: smaller;">Figura 5: Dashboard gerado no Grafana.</p>
 </div>
 
-*Este projeto foi desenvolvido durante a disciplina de **Fundamentos de Sistemas Embarcados**, ministrada pelo [Prof. Dr. Rodolfo Botto](https://buscatextual.cnpq.br/buscatextual/visualizacv.do;jsessionid=2708D44749FF71E24222D13D375F0255.buscatextual_0).*
+*Este projeto foi desenvolvido durante a disciplina de **Fundamentos de Sistemas Embarcados** durante o Curso de **Ciência da Computação** na **Universidade Federal de Sergipe (UFS)**.
 
 ## Componentes Utilizados (e Recomendados)
 
