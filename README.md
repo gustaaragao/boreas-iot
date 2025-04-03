@@ -111,10 +111,55 @@ sensor-temperatura-umidade-arduino-iot/
 
 ### Configuração do Arduino
 
-Para iniciar os serviços necessários, como Mosquitto (broker MQTT), Node-RED e Grafana, utilize o comando abaixo:
+1. Instale as dependências presentes na pasta `arduino/libs`.
+
+2. Configure as constantes para acessar o **MQTT Broker (Mosquitto)**
+```cpp
+// Configuração do MQTT Broker
+IPAddress server(192, 168, 137, 1);   // Endereço IP do MQTT Broker (neste caso, o IP da máquina que hospeda o Mosquitto)
+IPAddress ip(192, 168, 137, 19);      // Endereço IP do Arduino (certifique-se de que ambos estão na mesma rede)
+
+#define PORTA_MQTT_BROKER 1883        // Porta padrão do Mosquitto (MQTT Broker)
+```
+
+2. Configure as constantes para o **módulo I2C** e o **Display LCD 20x4**:
+
+```cpp
+// Configuração do módulo I2C e Display LCD 20x4
+#define NUMERO_COLUNAS 20             // Número de colunas do display
+#define NUMERO_LINHAS 4               // Número de linhas do display
+#define ENDERECO 0x27                 // Endereço do módulo I2C (varia conforme o modelo utilizado, verifique o seu)
+```
+
+3. Embarque o código na sua placa.
+
+### Configuração do Servidor
+
+1. Instale o **Docker** na sua máquina (e o **Docker Desktop** ou o **Podman** para facilitar o gerenciamento dos containers). 
+
+2. Certifique-se de que o arquivo `docker-compose.yml` está configurado corretamente. Ele já inclui os serviços necessários, como **Mosquitto**, **Node-RED**, **InfluxDB** e **Grafana**.
+
+3. Execute o seguinte comando para iniciar os containers:
 
 ```sh
 docker-compose up --build -d
 ```
 
-### Configuração do Servidor
+4. *(Opcional)* Use o [**MQTTBox**](https://github.com/workswithweb/MQTTBox) para verificar se o Mosquitto está funcionando.
+
+5. Configure o **InfluxDB**: criar um usuário, uma organização chamada `ufs` e um bucket `home/temperature-humidity`.
+
+6. Configure o **Grafana**: crie um usuário.
+
+7. *(Opcional)* No **Grafana**, importe o **_json_** disponível em `server/configs/grafana/dashboards/dht22-dashboard.json`.
+
+## Contato
+
+Se você tiver dúvidas, sugestões ou quiser contribuir com o projeto, entre em contato:
+
+- **Autor**: Gustavo Henrique Aragão Silva
+- **E-mail**: gustavo.aragao@dcomp.ufs.br
+- **LinkedIn**: [linkedin.com/in/gustavoaragaoo](https://linkedin.com/in/gustavoaragaoo)
+- **GitHub**: [github.com/gustaaragao](https://github.com/gustaaragao)
+
+Fique à vontade para abrir issues ou pull requests no repositório do projeto!
