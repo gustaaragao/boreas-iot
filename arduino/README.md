@@ -1,1 +1,0 @@
-# Tutorial de Configuração para o Arduino
