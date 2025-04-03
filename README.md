@@ -149,9 +149,13 @@ docker-compose up --build -d
 
 5. Configure o **InfluxDB**: criar um usuário, uma organização chamada `ufs` e um bucket `home/temperature-humidity`.
 
-6. Configure o **Grafana**: crie um usuário.
+6. *(Opcional)* Configure o **NODE-RED**: talvez seja necessário instalar manualmente as dependências de comunicação com InfluxDB, chamado `node-red-contrib-influxdb`.
 
-7. *(Opcional)* No **Grafana**, importe o **_json_** disponível em `server/configs/grafana/dashboards/dht22-dashboard.json`.
+7. Configure o **NODE-RED**: substitua o **API Token do InfluxDB** presente no projeto pelo o seu. Recomendo esse [tutorial](https://docs.influxdata.com/influxdb/cloud/admin/tokens/create-token/) da Documentação Oficial.
+
+8. Configure o **Grafana**: crie um usuário.
+
+9. *(Opcional)* No **Grafana**, importe o **_json_** disponível em `server/configs/grafana/dashboards/dht22-dashboard.json`.
 
 ## Contato
 
