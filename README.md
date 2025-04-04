@@ -167,3 +167,8 @@ Se você tiver dúvidas, sugestões ou quiser contribuir com o projeto, entre em
 - **GitHub**: [github.com/gustaaragao](https://github.com/gustaaragao)
 
 Fique à vontade para abrir issues ou pull requests no repositório do projeto!
+
+
+## Agradecimentos Especiais
+
+Gostaríamos de expressar nossos sinceros agradecimentos a [Paulo Aragão](https://github.com/pauloaragao) por sua contribuição e suporte a arquitetura da solução e mostrar o caminho.
